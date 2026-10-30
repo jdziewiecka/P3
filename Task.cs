@@ -98,7 +98,9 @@ public static class T4 {
         }
 
         double highestValue = list.Max(reading => reading.Value);
-        double lowestValue = list.Min(reading => reading.Value);
+        
+        var tmpReadings = list.Where(r => string.Equals(r.Sensor, "tmp", StringComparison.OrdinalIgnoreCase));
+        double lowestTemp = tmpReadings.Any() ? tmpReadings.Min(r => r.Value) : 0; // lub inna wartość domyślna
         
         string MostReadings = list.GroupBy(r => r.Sensor)
             .OrderByDescending(g => g.Count())
@@ -144,6 +146,270 @@ public static class T4 {
         
         return new Data(highestValue, lowestValue, MostReadings, TotalDuration, UniqueSensors, AverageReadings, LargestGaps, SignChanges);
         
+        // if (_readings.Count == 0) {
+        //     return new Data(
+        //         HighestValue: 0,
+        //         LowestTemp: 0,
+        //         MostReadings: string.Empty,
+        //         TotalDuration: TimeSpan.Zero,
+        //         UniqueSensors: new List<string>(),
+        //         AverageReadings: new List<(string, double)>(),
+        //         LargestGaps: new List<(string, TimeSpan)>(),
+        //         SignChanges: new List<(Reading, Reading)>()
+        //     );
+        // }
+        //
+        // // 1. Najwyższa wartość i najniższa temperatura ogółem
+        // double highestValue = _readings[0].Value;
+        // double lowestTemp = _readings[0].Value;
+        // DateTime minAt = _readings[0].At;
+        // DateTime maxAt = _readings[0].At;
+        //
+        // for (int i = 0; i < _readings.Count; i++) {
+        //     var r = _readings[i];
+        //     if (r.Value > highestValue) highestValue = r.Value;
+        //     if (r.Value < lowestTemp) lowestTemp = r.Value;
+        //     if (r.At < minAt) minAt = r.At;
+        //     if (r.At > maxAt) maxAt = r.At;
+        // }
+        //
+        // TimeSpan totalDuration = maxAt - minAt;
+        //
+        // // Grupowanie odczytów wg czujników za pomocą słownika
+        // Dictionary<string, List<Reading>> sensorDict = new Dictionary<string, List<Reading>>();
+        // for (int i = 0; i < _readings.Count; i++) {
+        //     var r = _readings[i];
+        //     if (!sensorDict.ContainsKey(r.Sensor)) {
+        //         sensorDict[r.Sensor] = new List<Reading>();
+        //     }
+        //     sensorDict[r.Sensor].Add(r);
+        // }
+        //
+        // // 2. Lista unikalnych czujników
+        // List<string> uniqueSensors = new List<string>();
+        // foreach (var key in sensorDict.Keys) {
+        //     uniqueSensors.Add(key);
+        // }
+        //
+        // // 3. Czujnik z największą liczbą odczytów
+        // string mostReadings = string.Empty;
+        // int maxCount = -1;
+        // foreach (var kvp in sensorDict) {
+        //     if (kvp.Value.Count > maxCount) {
+        //         maxCount = kvp.Value.Count;
+        //         mostReadings = kvp.Key;
+        //     }
+        // }
+        //
+        // List<(string, double)> averageReadings = new List<(string, double)>();
+        // List<(string, TimeSpan)> largestGaps = new List<(string, TimeSpan)>();
+        // List<(Reading, Reading)> signChanges = new List<(Reading, Reading)>();
+        //
+        // foreach (var kvp in sensorDict) {
+        //     string sensor = kvp.Key;
+        //     List<Reading> list = kvp.Value;
+        //
+        //     // Sortowanie chronologiczne odczytów dla danego czujnika
+        //     list.Sort((a, b) => a.At.CompareTo(b.At));
+        //
+        //     // 4. Średnia wartość odczytów dla czujnika
+        //     double sum = 0;
+        //     for (int i = 0; i < list.Count; i++) {
+        //         sum += list[i].Value;
+        //     }
+        //     double avg = list.Count > 0 ? sum / list.Count : 0;
+        //     averageReadings.Add((sensor, avg));
+        //
+        //     // 5. Największy odstęp czasowy (Largest Gap) dla czujnika
+        //     TimeSpan maxGap = TimeSpan.Zero;
+        //     if (list.Count > 1) {
+        //         for (int i = 1; i < list.Count; i++) {
+        //             TimeSpan gap = list[i].At - list[i - 1].At;
+        //             if (gap > maxGap) {
+        //                 maxGap = gap;
+        //             }
+        //         }
+        //     }
+        //     largestGaps.Add((sensor, maxGap));
+        //
+        //     // 6. Zmiany znaków (Sign Changes: pierwszy < drugi, czyli ujemny -> dodatni)
+        //     if (list.Count > 1) {
+        //         for (int i = 1; i < list.Count; i++) {
+        //             var r1 = list[i - 1];
+        //             var r2 = list[i];
+        //             if (r1.Value < 0 && r2.Value > 0) {
+        //                 signChanges.Add((r1, r2));
+        //             }
+        //         }
+        //     }
+        // }
+        //
+        // return new Data(
+        //     HighestValue: highestValue,
+        //     LowestTemp: lowestTemp,
+        //     MostReadings: mostReadings,
+        //     TotalDuration: totalDuration,
+        //     UniqueSensors: uniqueSensors,
+        //     AverageReadings: averageReadings,
+        //     LargestGaps: largestGaps,
+        //     SignChanges: signChanges
+        // );
+        
+        // if (_readings.Count == 0) {
+        //     return new Data(
+        //         HighestValue: 0,
+        //         LowestTemp: 0,
+        //         MostReadings: string.Empty,
+        //         TotalDuration: TimeSpan.Zero,
+        //         UniqueSensors: new List<string>(),
+        //         AverageReadings: new List<(string, double)>(),
+        //         LargestGaps: new List<(string, TimeSpan)>(),
+        //         SignChanges: new List<(Reading, Reading)>()
+        //     );
+        // }
+        //
+        // // Inicjalizacja wartości globalnych
+        // double highestValue = _readings[0].Value;
+        //
+        // // Szukanie początkowej najniższej temperatury dla czujnika "tmp"
+        // double lowestTemp = double.MaxValue;
+        // bool foundTmp = false;
+        //
+        // DateTime minAt = _readings[0].At;
+        // DateTime maxAt = _readings[0].At;
+        //
+        // // 1. Przebieg globalny przez wszystkie odczyty (tylko foreach)
+        // foreach (var r in _readings) {
+        //     if (r.Value > highestValue) {
+        //         highestValue = r.Value;
+        //     }
+        //
+        //     // Najniższa temperatura tylko dla sensorów o nazwie "tmp" (ignorując wielkość liter)
+        //     if (string.Equals(r.Sensor, "tmp", StringComparison.OrdinalIgnoreCase)) {
+        //         if (!foundTmp || r.Value < lowestTemp) {
+        //             lowestTemp = r.Value;
+        //             foundTmp = true;
+        //         }
+        //     }
+        //
+        //     if (r.At < minAt) {
+        //         minAt = r.At;
+        //     }
+        //     if (r.At > maxAt) {
+        //         maxAt = r.At;
+        //     }
+        // }
+        //
+        // // Jeśli nie znaleziono żadnego odczytu z sensora "tmp", można ustawić np. 0 lub wartość domyślną
+        // if (!foundTmp) {
+        //     lowestTemp = 0; 
+        // }
+        //
+        // TimeSpan totalDuration = maxAt - minAt;
+        //
+        // // Grupowanie odczytów wg czujników za pomocą słownika (foreach)
+        // Dictionary<string, List<Reading>> sensorDict = new Dictionary<string, List<Reading>>();
+        // foreach (var r in _readings) {
+        //     if (!sensorDict.ContainsKey(r.Sensor)) {
+        //         sensorDict[r.Sensor] = new List<Reading>();
+        //     }
+        //     sensorDict[r.Sensor].Add(r);
+        // }
+        //
+        // // 2. Lista unikalnych czujników
+        // List<string> uniqueSensors = new List<string>();
+        // foreach (var key in sensorDict.Keys) {
+        //     uniqueSensors.Add(key);
+        // }
+        //
+        // // 3. Czujnik z największą liczbą odczytów
+        // string mostReadings = string.Empty;
+        // int maxCount = -1;
+        // foreach (var kvp in sensorDict) {
+        //     if (kvp.Value.Count > maxCount) {
+        //         maxCount = kvp.Value.Count;
+        //         mostReadings = kvp.Key;
+        //     }
+        // }
+        //
+        // List<(string, double)> averageReadings = new List<(string, double)>();
+        // List<(string, TimeSpan)> largestGaps = new List<(string, TimeSpan)>();
+        // List<(Reading, Reading)> signChanges = new List<(Reading, Reading)>();
+        //
+        // foreach (var kvp in sensorDict) {
+        //     string sensor = kvp.Key;
+        //     List<Reading> list = kvp.Value;
+        //
+        //     // Sortowanie chronologiczne odczytów dla danego czujnika (wymaga operacji na liście)
+        //     list.Sort((a, b) => a.At.CompareTo(b.At));
+        //
+        //     // 4. Średnia wartość odczytów dla czujnika (użycie foreach)
+        //     double sum = 0;
+        //     int count = 0;
+        //     foreach (var r in list) {
+        //         sum += r.Value;
+        //         count++;
+        //     }
+        //     double avg = count > 0 ? sum / count : 0;
+        //     averageReadings.Add((sensor, avg));
+        //
+        //     // 5. Największy odstęp czasowy (Largest Gap) dla czujnika
+        //     TimeSpan maxGap = TimeSpan.Zero;
+        //     if (list.Count > 1) {
+        //         Reading previous = list[0];
+        //         foreach (var current in list) {
+        //             // Pomijamy pierwszy element, bo nie ma poprzednika w tej iteracji bezpośredniej
+        //             if (current.At == previous.At && current.Value == previous.Value) {
+        //                 // Jeśli to ten sam obiekt, idziemy dalej
+        //                 continue;
+        //             }
+        //             // Alternatywnie bezpieczniejsze sprawdzanie po indeksie lub parze:
+        //             // Zamiast tego zrobimy czystą iterację par za pomocą pętli foreach i pomocniczej zmiennej:
+        //         }
+        //     }
+        //     
+        //     // Poprawne i czyste przejście przez pary sąsiednie za pomocą foreach:
+        //     if (list.Count > 1) {
+        //         TimeSpan currentMaxGap = TimeSpan.Zero;
+        //         Reading? prev = null;
+        //         foreach (var r in list) {
+        //             if (prev.HasValue) {
+        //                 TimeSpan gap = r.At - prev.Value.At;
+        //                 if (gap > currentMaxGap) {
+        //                     currentMaxGap = gap;
+        //                 }
+        //             }
+        //             prev = r;
+        //         }
+        //         largestGaps.Add((sensor, currentMaxGap));
+        //     } else {
+        //         largestGaps.Add((sensor, TimeSpan.Zero));
+        //     }
+        //
+        //     // 6. Zmiany znaków (Sign Changes: pierwszy < drugi, czyli ujemny -> dodatni) przy użyciu foreach
+        //     if (list.Count > 1) {
+        //         Reading? prevSign = null;
+        //         foreach (var r in list) {
+        //             if (prevSign.HasValue) {
+        //                 if (prevSign.Value.Value < 0 && r.Value > 0) {
+        //                     signChanges.Add((prevSign.Value, r));
+        //                 }
+        //             }
+        //             prevSign = r;
+        //         }
+        //     }
+        // }
+        //
+        // return new Data(
+        //     HighestValue: highestValue,
+        //     LowestTemp: lowestTemp,
+        //     MostReadings: mostReadings,
+        //     TotalDuration: totalDuration,
+        //     UniqueSensors: uniqueSensors,
+        //     AverageReadings: averageReadings,
+        //     LargestGaps: largestGaps,
+        //     SignChanges: signChanges
+        // );
 
     }
 }
